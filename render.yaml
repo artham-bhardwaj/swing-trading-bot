@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: swing-trading-bot
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: PORT
+        value: 10000
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: WATCHLIST
+        value: "RELIANCE.NS,TCS.NS,INFY.NS"

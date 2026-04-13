@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  trading-assistant:
+    build: .
+    container_name: swing-trading-assistant
+    ports:
+      - "10000:10000"
+    environment:
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - LOG_LEVEL=INFO
+      - DEBUG=False
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Optional: Mount volume for logs
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - trading-network
+
+networks:
+  trading-network:
+    driver: bridge
