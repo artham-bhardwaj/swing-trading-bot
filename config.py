@@ -6,6 +6,7 @@ Loads settings from environment variables with defaults.
 import os
 from typing import Optional, List
 from pydantic_settings import BaseSettings
+from pydantic import Field
 
 
 class Settings(BaseSettings):
@@ -31,7 +32,10 @@ class Settings(BaseSettings):
 
     # Scheduler settings
     analyzer_interval_hours: int = 1
-    watchlist: List[str] = ["RELIANCE.NS", "TCS.NS", "INFY.NS"]
+    watchlist: List[str] = Field(
+        default=["RELIANCE.NS", "TCS.NS", "INFY.NS"],
+        description="List of stock symbols to monitor"
+    )
 
     # Logging settings
     log_level: str = "INFO"
@@ -40,6 +44,15 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        
+    def __init__(self, **data):
+        """Custom init to handle watchlist from env variable."""
+        # Check if WATCHLIST env var is set
+        watchlist_env = os.getenv("WATCHLIST")
+        if watchlist_env:
+            # Parse comma-separated list
+            data["watchlist"] = [s.strip() for s in watchlist_env.split(",") if s.strip()]
+        super().__init__(**data)
 
 
 # Global settings instance
