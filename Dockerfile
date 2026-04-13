@@ -7,19 +7,22 @@ WORKDIR /app
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies
+# Install build essentials and system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     gcc \
+    g++ \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+# Upgrade pip, setuptools, wheel and install with binary wheels preference
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --prefer-binary -r requirements.txt
 
 # Copy application code
 COPY config.py .
@@ -28,6 +31,9 @@ COPY data.py .
 COPY strategy.py .
 COPY notifier.py .
 COPY scheduler.py .
+COPY market_hours.py .
+COPY backtest.py .
+COPY demo_data.py .
 COPY main.py .
 
 # Create a non-root user for security
