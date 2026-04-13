@@ -6,7 +6,7 @@ Loads settings from environment variables with defaults.
 import os
 from typing import Optional, List
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, field_validator
 
 
 class Settings(BaseSettings):
@@ -44,15 +44,20 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
-        
-    def __init__(self, **data):
-        """Custom init to handle watchlist from env variable."""
-        # Check if WATCHLIST env var is set
-        watchlist_env = os.getenv("WATCHLIST")
-        if watchlist_env:
-            # Parse comma-separated list
-            data["watchlist"] = [s.strip() for s in watchlist_env.split(",") if s.strip()]
-        super().__init__(**data)
+
+    @field_validator("watchlist", mode="before")
+    @classmethod
+    def parse_watchlist(cls, v):
+        """Parse watchlist from string or list."""
+        if isinstance(v, str):
+            # Handle comma-separated string
+            if not v or v.strip() == "":
+                return ["RELIANCE.NS", "TCS.NS", "INFY.NS"]
+            return [s.strip() for s in v.split(",") if s.strip()]
+        if isinstance(v, list):
+            return v
+        # Default if nothing provided
+        return ["RELIANCE.NS", "TCS.NS", "INFY.NS"]
 
 
 # Global settings instance
